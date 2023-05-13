@@ -18,6 +18,26 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         intercept_sign_constraint: int = 0,
         features_sum_constraint_equal: float = None,
     ) -> "ConstrainedLinearRegression":
+        """
+        Fits a linear model with constraints
+
+        X : pandas.DataFrame of shape (n_samples, n_features)
+            Training data.
+
+        y : numpy.ndarray of shape (n_samples,)
+            Target values.
+
+        features_sign_constraints : dict
+            Dictionary with sign constraints. Keys must be from X's columns and values must take the values: -1, 0, 1
+            indicating negative, unconstrained and positive sign respectively. Any column that is not present in the
+            dictionary will default to 0.
+
+        intercept_sign_constraint : int
+            Indicates the sign of intercept, if present, and must take the values: -1, 0, 1
+
+        features_sum_constraint_equal : float
+            Constraints the sum of all coefficients plus intercept (if present)
+        """
         X_ = X.values.copy()
         y_ = y.copy()
 
