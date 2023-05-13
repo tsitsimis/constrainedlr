@@ -2,8 +2,8 @@ test:
 	PYTHONPATH=. pytest tests
 
 build:
-	rm -r dist/
-	rm -r *.egg-info
+	rm -rf dist/
+	rm -rf *.egg-info
 	python -m build
 
 
