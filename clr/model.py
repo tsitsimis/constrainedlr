@@ -1,9 +1,6 @@
-from typing import Union
-
 import numpy as np
-import osqp
 import pandas as pd
-from scipy import sparse
+from cvxopt import matrix, solvers
 from sklearn.base import BaseEstimator, RegressorMixin
 
 
@@ -13,13 +10,16 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         self.coef_ = None
         self.intercept_ = None
 
-    def fit(self, X: pd.DataFrame, y: Union[np.ndarray, pd.Series], constraints) -> "ConstrainedLinearRegression":
+    def fit(
+        self,
+        X: pd.DataFrame,
+        y: np.ndarray,
+        features_sign_constraints: dict = {},
+        intercept_sign_constraint: int = 0,
+        features_sum_constraint_equal: float = None,
+    ) -> "ConstrainedLinearRegression":
         X_ = X.values.copy()
-
-        if type(y) == pd.Series:
-            y_ = y.values.copy()
-        else:
-            y_ = y.copy()
+        y_ = y.copy()
 
         if np.ndim(y_) == 1:
             y_ = y_.reshape(-1, 1)
@@ -33,21 +33,31 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         dim = X_.shape[1]
 
         P = X_.T.dot(X_)
-        P = sparse.csc_matrix(P)
+        P = matrix(P)
         q = (-y_.T.dot(X_)).T
+        q = matrix(q)
 
-        A = np.eye(dim)
-        # Don't restrict intercept to be positive
+        features_sign_constraints_full = {feature: 0 for feature in X.columns}
+        features_sign_constraints_full.update(features_sign_constraints)
+        diag_values = list(features_sign_constraints_full.values())
         if self.fit_intercept:
-            A[-1, -1] = 0
-        A = sparse.csc_matrix(A)
+            diag_values.append(intercept_sign_constraint)
+        G = -1.0 * np.diag(diag_values)  # Negate since cvxopt by convention accepts inequalities of the form Gx <= h
+        G = matrix(G)
+        h = np.zeros(dim)
+        h = matrix(h)
 
-        l_matrix = np.zeros(dim)
+        A, b = None, None
+        if features_sum_constraint_equal:
+            A = np.ones(dim).astype("float")
+            A = A.reshape(1, -1)
+            A = matrix(A)
+            b = np.array([features_sum_constraint_equal]).astype("float")
+            b = matrix(b)
 
-        solver = osqp.OSQP()
-        solver.setup(P=P, q=q, A=A, l=l_matrix, eps_abs=1e-8, eps_rel=1e-8, verbose=False)
-        solution = solver.solve()
-        weights = solution.x
+        solvers.options["show_progress"] = False
+        solver = solvers.qp(P=P, q=q, G=G, h=h, A=A, b=b)
+        weights = np.array(solver["x"]).flatten()
 
         if self.fit_intercept:
             self.coef_ = weights[0:-1]
