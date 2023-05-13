@@ -34,11 +34,11 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/tsitsimis/tinyshap"
+"Homepage" = "https://github.com/tsitsimis/clr"
 
 [tool.setuptools]
-py-modules = ["tinyshap"]
+py-modules = ["clr"]
 
 [tool.black]
 line-length = 120
-target-version = ['py37', 'py38']
+target-version = ['py37', 'py38', 'py39']
