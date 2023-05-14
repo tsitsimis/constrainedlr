@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = 'constrained-lr'
-version = '0.0.1'
+name = 'constrainedlr'
+version = '0.0.6'
 description = 'Constrained Linear Regression with sklearn-compatible API'
 readme = 'README.md'
 authors = [
@@ -34,10 +34,10 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/tsitsimis/clr"
+"Homepage" = "https://github.com/tsitsimis/constrainedlr"
 
-[tool.setuptools]
-py-modules = ["constrained_lr"]
+#[tool.setuptools]
+#py-modules = ["constrainedlr"]
 
 [tool.black]
 line-length = 120

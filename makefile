@@ -1,7 +1,7 @@
 test:
-	PYTHONPATH=. pytest tests
+	PYTHONPATH=./src pytest tests
 
-build:
+build-package:
 	rm -rf dist/
 	rm -rf *.egg-info
 	python -m build

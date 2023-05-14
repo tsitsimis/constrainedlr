@@ -1,1 +1,0 @@
-from constrained_lr.model import ConstrainedLinearRegression

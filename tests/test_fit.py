@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import LinearRegression
 
-from constrained_lr.model import ConstrainedLinearRegression
+from constrainedlr.model import ConstrainedLinearRegression
 
 atol = 1e-5
 
