@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.datasets import load_diabetes
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 
 from constrainedlr.model import ConstrainedLinearRegression
 
@@ -84,3 +84,14 @@ def test_features_sum():
     clr.fit(X, y, features_sum_constraint_equal=features_sum_constraint_equal)
     sum_of_weights = clr.coef_.sum()
     assert np.allclose(sum_of_weights, features_sum_constraint_equal, atol=atol)
+
+
+def test_alpha():
+    clr = ConstrainedLinearRegression(fit_intercept=True, alpha=1.0)
+    clr.fit(X, y)
+
+    ridge = Ridge(fit_intercept=True, alpha=1.0)
+    ridge.fit(X, y)
+
+    assert np.allclose(ridge.intercept_, clr.intercept_, rtol=0.01)
+    assert np.allclose(ridge.coef_, clr.coef_, rtol=0.01)

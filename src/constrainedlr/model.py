@@ -5,10 +5,11 @@ from sklearn.base import BaseEstimator, RegressorMixin
 
 
 class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
-    def __init__(self, fit_intercept: bool = True):
+    def __init__(self, fit_intercept: bool = True, alpha: float = 0.0):
         self.fit_intercept = fit_intercept
         self.coef_ = None
         self.intercept_ = None
+        self.alpha = alpha
 
     def fit(
         self,
@@ -52,7 +53,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
 
         dim = X_.shape[1]
 
-        P = X_.T.dot(X_)
+        P = X_.T.dot(X_) + self.alpha * np.eye(dim)
         P = matrix(P)
         q = (-y_.T.dot(X_)).T
         q = matrix(q)
