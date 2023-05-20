@@ -15,6 +15,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         self,
         X: pd.DataFrame,
         y: np.ndarray,
+        sample_weight: np.ndarray = None,
         features_sign_constraints: dict = {},
         intercept_sign_constraint: int = 0,
         features_sum_constraint_equal: float = None,
@@ -27,6 +28,9 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
 
         y : numpy.ndarray of shape (n_samples,)
             Target values.
+
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Individual weights for each sample.
 
         features_sign_constraints : dict
             Dictionary with sign constraints. Keys must be from X's columns and values must take the values: -1, 0, 1
@@ -53,9 +57,16 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
 
         dim = X_.shape[1]
 
-        P = X_.T.dot(X_) + self.alpha * np.eye(dim)
+        # Weight matrix
+        if sample_weight is None:
+            W = np.eye(n_samples)
+        else:
+            W = np.diag(sample_weight)
+
+        # Quadratic program
+        P = X_.T.dot(W).dot(X_) + self.alpha * np.eye(dim)
         P = matrix(P)
-        q = (-y_.T.dot(X_)).T
+        q = (-y_.T.dot(W).dot(X_)).T
         q = matrix(q)
 
         features_sign_constraints_full = {feature: 0 for feature in X.columns}

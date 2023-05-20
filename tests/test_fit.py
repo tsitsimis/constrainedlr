@@ -95,3 +95,19 @@ def test_alpha():
 
     assert np.allclose(ridge.intercept_, clr.intercept_, rtol=0.01)
     assert np.allclose(ridge.coef_, clr.coef_, rtol=0.01)
+
+
+def test_sample_weight():
+    # Perform multiple tests since sample weights are produced randomly
+    np.random.seed(0)
+    for _ in range(10):
+        sample_weight = np.random.random(X.shape[0]) * 10
+
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, sample_weight=sample_weight)
+
+        lr = LinearRegression()
+        lr.fit(X, y, sample_weight=sample_weight)
+
+        assert np.allclose(lr.intercept_, clr.intercept_, atol=atol)
+        assert np.allclose(lr.coef_, clr.coef_, atol=atol)
