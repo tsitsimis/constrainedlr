@@ -10,12 +10,12 @@ In Marketing Mix Modeling (MMM), the attribution of sales to various marketing c
 
 ### Installation
 ```bash
-pip install constrained-lr
+pip install constrainedlr
 ```
 
 ### Example Usage
 ```python
-from constrained_lr import ConstrainedLinearRegression
+from constrainedlr import ConstrainedLinearRegression
 from sklearn.metrics import mean_squared_error
 
 model = ConstrainedLinearRegression()
