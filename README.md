@@ -1,5 +1,12 @@
 # Constrained Linear Regression
-constrained-lr is a drop-in replacement for `scikit-learn`'s `linear_model.LinearRegression` with the additional flexibility to define more complex (but linear) constraints on the model's coefficients.
+<a href="https://pypi.org/project/constrainedlr" target="_blank">
+    <img src="https://img.shields.io/pypi/v/constrainedlr?color=%2334D058&label=pypi%20package" alt="Package version">
+</a>
+<a href="https://pypi.org/project/constrainedlr" target="_blank">
+    <img src="https://img.shields.io/pypi/pyversions/constrainedlr.svg?color=%2334D058" alt="Supported Python versions">
+</a>
+
+constrainedlr is a drop-in replacement for `scikit-learn`'s `linear_model.LinearRegression` with the additional flexibility to define more complex (but linear) constraints on the model's coefficients.
 
 ### Use-cases
 #### SHAP
