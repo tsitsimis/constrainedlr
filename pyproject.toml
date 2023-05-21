@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = 'constrainedlr'
-version = '0.0.8'
+version = '0.0.9'
 description = 'Constrained Linear Regression with sklearn-compatible API'
 readme = 'README.md'
 authors = [
@@ -13,7 +13,7 @@ authors = [
 license = {file = 'LICENSE'}
 requires-python = '>=3.8'
 dependencies = [
-  "pandas>=2.0.0",
+  "numpy>=1.18.0",
   "scikit-learn>=1.2.2",
   "cvxopt>=1.3.1",
 ]

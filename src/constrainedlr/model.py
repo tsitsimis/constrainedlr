@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from cvxopt import matrix, solvers
 from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
@@ -43,19 +44,17 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         features_sum_constraint_equal : float
             Constraints the sum of all coefficients plus intercept (if present)
         """
-        X_ = X.values.copy()
-        y_ = y.copy()
+        X, y = check_X_y(X, y)
+        if np.ndim(y) == 1:
+            y = y.reshape(-1, 1)
 
-        if np.ndim(y_) == 1:
-            y_ = y_.reshape(-1, 1)
-
-        n_samples = X.shape[0]
+        n_samples, n_features = X.shape
 
         # Augment features to fit intercept
         if self.fit_intercept:
-            X_ = np.hstack([X_, np.ones(n_samples).reshape(-1, 1)])
+            X = np.hstack([X, np.ones(n_samples).reshape(-1, 1)])
 
-        dim = X_.shape[1]
+        dim = X.shape[1]
 
         # Weight matrix
         if sample_weight is None:
@@ -64,12 +63,12 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
             W = np.diag(sample_weight)
 
         # Quadratic program
-        P = X_.T.dot(W).dot(X_) + self.alpha * np.eye(dim)
+        P = X.T.dot(W).dot(X) + self.alpha * np.eye(dim)
         P = matrix(P)
-        q = (-y_.T.dot(W).dot(X_)).T
+        q = (-y.T.dot(W).dot(X)).T
         q = matrix(q)
 
-        features_sign_constraints_full = {feature: 0 for feature in X.columns}
+        features_sign_constraints_full = {feature: 0 for feature in range(n_features)}
         features_sign_constraints_full.update(features_sign_constraints)
         diag_values = list(features_sign_constraints_full.values())
         if self.fit_intercept:
@@ -100,16 +99,17 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
-        X_ = X.values.copy()
+        check_is_fitted(self)
+        X = check_array(X)
 
-        n_samples = X_.shape[0]
+        n_samples = X.shape[0]
 
         # Augment features for intercept
         if self.fit_intercept:
-            X_ = np.hstack([X_, np.ones(n_samples).reshape(-1, 1)])
+            X = np.hstack([X, np.ones(n_samples).reshape(-1, 1)])
             weights = np.concatenate([self.coef_, [self.intercept_]])
         else:
             weights = self.coef_
 
-        y_pred = X_.dot(weights)
+        y_pred = X.dot(weights)
         return y_pred

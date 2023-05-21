@@ -19,11 +19,11 @@ from constrainedlr import ConstrainedLinearRegression
 from sklearn.metrics import mean_squared_error
 
 model = ConstrainedLinearRegression()
-model.fit(X_train, y_train, features_sign_constraints={"s3": 1, "s4": -1})
+model.fit(X_train, y_train, features_sign_constraints={6: 1, 7: -1})  # 6th and 7th feature (s3 and s4)
 
 y_pred = model.predict(X_test)
 print(mean_squared_error(y_test, y_pred))
-print(dict(zip(X.columns, model.coef_)))
+print(model.coef_)
 ```
 
 See full example in the [notebook](./notebooks/demo.ipynb)

@@ -10,7 +10,7 @@ from constrainedlr.model import ConstrainedLinearRegression
 atol = 1e-5
 
 dataset = load_diabetes()
-X = pd.DataFrame(dataset["data"], columns=dataset["feature_names"])
+X = dataset["data"]
 y = dataset["target"]
 
 
@@ -41,7 +41,7 @@ def test_unconstrained():
 
 def test_all_positive():
     clr = ConstrainedLinearRegression(fit_intercept=True)
-    clr.fit(X, y, features_sign_constraints={col: 1 for col in X.columns})
+    clr.fit(X, y, features_sign_constraints={col: 1 for col in range(X.shape[1])})
 
     lr = LinearRegression(fit_intercept=True, positive=True)
     lr.fit(X, y)
@@ -57,7 +57,7 @@ def test_feature_signs():
     np.random.seed(0)
     for _ in range(10):
         signs = np.random.choice([-1, 1], size=X.shape[1])
-        features_sign_constraints = dict(zip(X.columns, signs))
+        features_sign_constraints = dict(zip(list(range(X.shape[1])), signs))
         clr.fit(X, y, features_sign_constraints=features_sign_constraints)
 
         assert np.alltrue(np.sign(clr.coef_) == signs)
