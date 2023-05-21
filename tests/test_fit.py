@@ -41,7 +41,7 @@ def test_unconstrained():
 
 def test_all_positive():
     clr = ConstrainedLinearRegression(fit_intercept=True)
-    clr.fit(X, y, features_sign_constraints={col: 1 for col in range(X.shape[1])})
+    clr.fit(X, y, coefficients_sign_constraints={col: 1 for col in range(X.shape[1])})
 
     lr = LinearRegression(fit_intercept=True, positive=True)
     lr.fit(X, y)
@@ -58,7 +58,7 @@ def test_feature_signs():
     for _ in range(10):
         signs = np.random.choice([-1, 1], size=X.shape[1])
         features_sign_constraints = dict(zip(list(range(X.shape[1])), signs))
-        clr.fit(X, y, features_sign_constraints=features_sign_constraints)
+        clr.fit(X, y, coefficients_sign_constraints=features_sign_constraints)
 
         assert np.alltrue(np.sign(clr.coef_) == signs)
 
@@ -75,13 +75,13 @@ def test_intercept_sign():
 def test_features_sum():
     clr = ConstrainedLinearRegression(fit_intercept=True)
     features_sum_constraint_equal = 15
-    clr.fit(X, y, features_sum_constraint_equal=features_sum_constraint_equal)
+    clr.fit(X, y, coefficients_sum_constraint=features_sum_constraint_equal)
     sum_of_weights = clr.coef_.sum() + clr.intercept_
     assert np.allclose(sum_of_weights, features_sum_constraint_equal, atol=atol)
 
     clr = ConstrainedLinearRegression(fit_intercept=False)
     features_sum_constraint_equal = 15
-    clr.fit(X, y, features_sum_constraint_equal=features_sum_constraint_equal)
+    clr.fit(X, y, coefficients_sum_constraint=features_sum_constraint_equal)
     sum_of_weights = clr.coef_.sum()
     assert np.allclose(sum_of_weights, features_sum_constraint_equal, atol=atol)
 

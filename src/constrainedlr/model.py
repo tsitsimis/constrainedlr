@@ -19,9 +19,9 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         X: Union[np.ndarray, pd.DataFrame],
         y: np.ndarray,
         sample_weight: np.ndarray = None,
-        features_sign_constraints: dict = {},
+        coefficients_sign_constraints: dict = {},
         intercept_sign_constraint: int = 0,
-        features_sum_constraint_equal: float = None,
+        coefficients_sum_constraint: float = None,
     ) -> "ConstrainedLinearRegression":
         """
         Fits a linear model with constraints
@@ -71,7 +71,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         q = matrix(q)
 
         features_sign_constraints_full = {feature: 0 for feature in range(n_features)}
-        features_sign_constraints_full.update(features_sign_constraints)
+        features_sign_constraints_full.update(coefficients_sign_constraints)
         diag_values = list(features_sign_constraints_full.values())
         if self.fit_intercept:
             diag_values.append(intercept_sign_constraint)
@@ -81,11 +81,11 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         h = matrix(h)
 
         A, b = None, None
-        if features_sum_constraint_equal:
+        if coefficients_sum_constraint:
             A = np.ones(dim).astype("float")
             A = A.reshape(1, -1)
             A = matrix(A)
-            b = np.array([features_sum_constraint_equal]).astype("float")
+            b = np.array([coefficients_sum_constraint]).astype("float")
             b = matrix(b)
 
         solvers.options["show_progress"] = False
