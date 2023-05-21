@@ -6,6 +6,8 @@ from cvxopt import matrix, solvers
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
+from .validation import validate_coefficients_sign_constraints
+
 
 class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
     def __init__(self, fit_intercept: bool = True, alpha: float = 0.0):
@@ -47,6 +49,8 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
             Constraints the sum of all coefficients plus intercept (if present)
         """
         X, y = check_X_y(X, y)
+        validate_coefficients_sign_constraints(coefficients_sign_constraints, X)
+
         if np.ndim(y) == 1:
             y = y.reshape(-1, 1)
 
