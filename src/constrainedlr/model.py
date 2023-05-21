@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 import pandas as pd
 from cvxopt import matrix, solvers
@@ -14,7 +16,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
 
     def fit(
         self,
-        X: pd.DataFrame,
+        X: Union[np.ndarray, pd.DataFrame],
         y: np.ndarray,
         sample_weight: np.ndarray = None,
         features_sign_constraints: dict = {},
@@ -24,7 +26,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         """
         Fits a linear model with constraints
 
-        X : pandas.DataFrame of shape (n_samples, n_features)
+        X : {numpy.ndarray, pandas.DataFrame} of shape (n_samples, n_features)
             Training data.
 
         y : numpy.ndarray of shape (n_samples,)
@@ -98,7 +100,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
 
         return self
 
-    def predict(self, X: pd.DataFrame) -> np.ndarray:
+    def predict(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
         check_is_fitted(self)
         X = check_array(X)
 
