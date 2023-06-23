@@ -60,7 +60,7 @@ def test_feature_signs():
         features_sign_constraints = dict(zip(list(range(X.shape[1])), signs))
         clr.fit(X, y, coefficients_sign_constraints=features_sign_constraints)
 
-        assert np.alltrue(np.sign(clr.coef_) == signs)
+        assert np.all(np.sign(clr.coef_) == signs)
 
 
 def test_intercept_sign():
@@ -111,3 +111,33 @@ def test_sample_weight():
 
         assert np.allclose(lr.intercept_, clr.intercept_, atol=atol)
         assert np.allclose(lr.coef_, clr.coef_, atol=atol)
+
+
+def test_coefficients_range_constraints():
+    clr = ConstrainedLinearRegression(fit_intercept=True)
+
+    # Perform multiple tests since bounds are produced randomly
+    np.random.seed(0)
+    for _ in range(50):
+        n_contraints = np.random.randint(0, X.shape[1])
+
+        # Add range constraints in a random set of features
+        coefficients_range_constraints = {}
+        for _ in range(n_contraints):
+            feature = np.random.randint(0, X.shape[1])
+
+            # Add either lower, or upper, or both contraints
+            feature_contraints = {}
+            if np.random.random() > 0.5:
+                feature_contraints.update({"upper": np.random.normal(100, 20)})
+            if np.random.random() > 0.5:
+                feature_contraints.update({"lower": np.random.normal(-100, 20)})
+            coefficients_range_constraints.update({feature: feature_contraints})
+
+        clr.fit(X, y, coefficients_range_constraints=coefficients_range_constraints)
+
+        for feature, contraints in coefficients_range_constraints.items():
+            if "upper" in contraints:
+                assert clr.coef_[feature] <= contraints["upper"] + atol
+            if "lower" in contraints:
+                assert clr.coef_[feature] >= contraints["lower"] - atol
