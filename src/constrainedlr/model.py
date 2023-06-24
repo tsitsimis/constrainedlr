@@ -31,7 +31,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
                 Weight vector of shape (n_features,).
 
             intercept_:
-                Independent/constant term in regressin model. Set to None if fit_intercept = False.
+                Independent/constant term in regression model. Set to None if fit_intercept = False.
         """
         self.fit_intercept = fit_intercept
         self.coef_ = None
@@ -115,19 +115,17 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         q = matrix(q)
 
         G, h = None, None
-        if len(coefficients_sign_constraints) > 0:
-            features_sign_constraints_full = {feature: 0 for feature in range(n_features)}
-            features_sign_constraints_full.update(coefficients_sign_constraints)
-            diag_values = list(features_sign_constraints_full.values())
-            if self.fit_intercept:
-                diag_values.append(intercept_sign_constraint)
-            G = -1.0 * np.diag(
-                diag_values
-            )  # Negate since cvxopt by convention accepts inequalities of the form Gx <= h
-            G = matrix(G)
-            h = np.zeros(dim)
-            h = matrix(h)
-        elif len(coefficients_range_constraints) > 0:
+        features_sign_constraints_full = {feature: 0 for feature in range(n_features)}
+        features_sign_constraints_full.update(coefficients_sign_constraints)
+        diag_values = list(features_sign_constraints_full.values())
+        if self.fit_intercept:
+            diag_values.append(intercept_sign_constraint)
+        G = -1.0 * np.diag(diag_values)  # Negate since cvxopt by convention accepts inequalities of the form Gx <= h
+        G = matrix(G)
+        h = np.zeros(dim)
+        h = matrix(h)
+
+        if len(coefficients_range_constraints) > 0:
             coefficients_upper_bound_constraints = {
                 k: v for k, v in coefficients_range_constraints.items() if "upper" in v
             }
