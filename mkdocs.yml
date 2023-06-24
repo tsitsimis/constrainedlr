@@ -1,0 +1,21 @@
+site_name: constrainedlr
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+
+  
+plugins:
+  - mkdocstrings
+  - search
+  - termynal
+
+repo_name: tsitsimis/constrainedlr
+repo_url: https://github.com/tsitsimis/constrainedlr
+
+nav:
+  - ConstrainedLR: index.md
+  - tutorials.md
+  - API.md
+  - licence.md

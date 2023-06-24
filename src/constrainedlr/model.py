@@ -11,6 +11,28 @@ from .validation import validate_coefficients_sign_constraints, validate_coeffic
 
 class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
     def __init__(self, fit_intercept: bool = True, alpha: float = 0.0):
+        """
+        Least squares Linear Regression with optional constraints on its coefficients/weights.
+
+        ConstrainedLinearRegression fits a linear model with coefficients w = (w1, …, wp) to minimize the residual
+        sum of squares between the observed targets in the dataset, and the targets predicted by the linear approximation,
+        while at the same time imposing constraints on the signs and values of the coefficients.
+
+        Args:
+            fit_intercept:
+                Whether to calculate the intercept for this model.
+
+            alpha:
+                Constant that multiplies the L2 penalty term, controlling regularization strength.
+                alpha must be a non-negative float i.e. in [0, inf).
+
+        Attributes:
+            coef_:
+                Weight vector of shape (n_features,).
+
+            intercept_:
+                Independent/constant term in regressin model. Set to None if fit_intercept = False.
+        """
         self.fit_intercept = fit_intercept
         self.coef_ = None
         self.intercept_ = None
@@ -27,34 +49,38 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         coefficients_sum_constraint: float = None,
     ) -> "ConstrainedLinearRegression":
         """
-        Fits a linear model with constraints
+        Fit linear model with constraints.
 
-        X : {numpy.ndarray, pandas.DataFrame} of shape (n_samples, n_features)
-            Training data.
+        Args:
+            X:
+                Training data of shape (n_samples, n_features).
 
-        y : numpy.ndarray of shape (n_samples,)
-            Target values.
+            y:
+                Target values of shape (n_samples,).
 
-        sample_weight : numpy.ndarray of shape (n_samples,), default=None
-            Individual weights for each sample.
+            sample_weight:
+                Individual weights of shape (n_samples,) for each sample.
 
-        features_sign_constraints : dict
-            Dictionary with sign constraints. Keys must be integers specifying the location of the corresponding feature
-            in the columns in the dataset. Values must take the values: -1, 0, 1 indicating negative,
-            unconstrained and positive sign respectively. Any column that is not present in the
-            dictionary will default to 0.
+            coefficients_sign_constraints:
+                Dictionary with sign constraints. Keys must be integers specifying the location of the corresponding feature
+                in the columns in the dataset. Values must take the values: -1, 0, 1 indicating negative,
+                unconstrained and positive sign respectively. Any column that is not present in the
+                dictionary will default to 0.
 
-        coefficients_range_constraints : dict
-            Dictionary of the form: `{column_index: {"lower": <float>, "upper": <float>}}`.
-            Eiter both or one of lower or upper bounds can be specified. If a column index is not specified,
-            the coefficient remains unconstrained. Only one of `features_sign_constraints` or `coefficients_range_constraints`
-            can be provided.
+            coefficients_range_constraints:
+                Dictionary of the form: `{column_index: {"lower": <float>, "upper": <float>}}`.
+                Eiter both or one of lower or upper bounds can be specified. If a column index is not specified,
+                the coefficient remains unconstrained. Only one of `features_sign_constraints` or `coefficients_range_constraints`
+                can be provided.
 
-        intercept_sign_constraint : int
-            Indicates the sign of intercept, if present, and must take the values: -1, 0, 1
+            intercept_sign_constraint:
+                Indicates the sign of intercept, if present, and must take the values: -1, 0, 1.
 
-        features_sum_constraint_equal : float
-            Constraints the sum of all coefficients plus intercept (if present)
+            coefficients_sum_constraint:
+                Constraints the sum of all coefficients plus intercept (if present).
+
+        Returns:
+            Fitted Estimator.
         """
         X, y = check_X_y(X, y)
         validate_coefficients_sign_constraints(coefficients_sign_constraints, X)
@@ -144,6 +170,16 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+        """
+        Predict using the linear model.
+
+        Parameters:
+            X:
+                Samples of shape (n_samples, n_features).
+
+        Returns:
+            Predicted values of shape (n_samples,).
+        """
         check_is_fitted(self)
         X = check_array(X)
 
