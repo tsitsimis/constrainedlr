@@ -13,6 +13,12 @@ def validate_coefficients_sign_constraints(coefficients_sign_constraints: dict, 
                 "Keys of coefficients_sign_constraints must be integers within the interval [0, X.shape[1])"
             )
 
+        if len(set(coefficients_sign_constraints.values()) - {-1, 0, 1}) > 0:
+            raise ValueError(
+                "Values of coefficients_sign_constraints must be 0, -1, or 1, for no sign constraint, "
+                "negative sign constraint, or positive sign constraint respectively"
+            )
+
 
 def validate_coefficients_range_constraints(coefficients_range_constraints: dict, X) -> None:
     if type(coefficients_range_constraints) != dict:
