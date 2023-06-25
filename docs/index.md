@@ -5,10 +5,10 @@ constrainedlr is a drop-in replacement of sklearn's `linear_model.LinearRegressi
 
 ## Installation
 
-```console
-$ pip install constrainedlr
+<!-- termynal -->
 
----> 100%
+```
+$ pip install constrainedlr
 ```
 
 ## Getting Started
@@ -31,13 +31,18 @@ model = ConstrainedLinearRegression(fit_intercept=True)
 # Fit model and constraint the sign of the 1st and 3rd coefficient
 # Coefficients are selected based on their index (zero-based) in the dataset
 sign_constraints = {
-    0: 1,  # Coefficient of 1st feature must be positive
-    2: -1,  # Coefficient of 3rd feature must be negative
-    3: 0,  # Coefficient of 4th feature has no sign constraint (this is optional)
+    0: "positive",  # Coefficient of 1st feature must be positive
+    2: "negative":,  # Coefficient of 3rd feature must be negative
     # The remaining coefficients are not specified and by default have no sign constraints 
 }
 model.fit(X, y, coefficients_sign_constraints=sign_constraints)
 print(model.coef_)
+```
+
+You can also impose constraint on the sign of the intercept:
+```python
+model.fit(X, y, intercept_sign_constraint="positive")
+print(model.intercept_)
 ```
 
 ### Range constraints
