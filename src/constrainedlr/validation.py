@@ -1,4 +1,7 @@
-def validate_coefficients_sign_constraints(coefficients_sign_constraints: dict, X) -> None:
+from typing import Union
+
+
+def validate_coefficients_sign_constraints(coefficients_sign_constraints: dict, X) -> dict:
     if type(coefficients_sign_constraints) != dict:
         raise ValueError("coefficients_sign_constraints must be of type dict")
 
@@ -13,11 +16,17 @@ def validate_coefficients_sign_constraints(coefficients_sign_constraints: dict, 
                 "Keys of coefficients_sign_constraints must be integers within the interval [0, X.shape[1])"
             )
 
-        if len(set(coefficients_sign_constraints.values()) - {-1, 0, 1}) > 0:
+        if len(set(coefficients_sign_constraints.values()) - {-1, 0, 1, "positive", "negative"}) > 0:
             raise ValueError(
-                "Values of coefficients_sign_constraints must be 0, -1, or 1, for no sign constraint, "
-                "negative sign constraint, or positive sign constraint respectively"
+                "Values of coefficients_sign_constraints must be 0 (no sign constraint), 'positive' or 1 (positive sign constraint), "
+                "'negative' or -1 (negative sign constraint)"
             )
+
+        # Replace "positive" with 1, "negative" with -1 for compatibility with the optimizer
+        coefficients_sign_constraints = {
+            k: 1 if v == "positive" else -1 if v == "negative" else v for k, v in coefficients_sign_constraints.items()
+        }
+    return coefficients_sign_constraints
 
 
 def validate_coefficients_range_constraints(coefficients_range_constraints: dict, X) -> None:

@@ -83,7 +83,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
             Fitted Estimator.
         """
         X, y = check_X_y(X, y)
-        validate_coefficients_sign_constraints(coefficients_sign_constraints, X)
+        coefficients_sign_constraints = validate_coefficients_sign_constraints(coefficients_sign_constraints, X)
         validate_coefficients_range_constraints(coefficients_range_constraints, X)
 
         if len(coefficients_sign_constraints) > 0 and len(coefficients_range_constraints) > 0:

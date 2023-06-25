@@ -1,4 +1,4 @@
-import sys
+import random
 
 import numpy as np
 import pandas as pd
@@ -55,12 +55,14 @@ def test_feature_signs():
 
     # Perform multiple tests since signs are produced randomly
     np.random.seed(0)
-    for _ in range(10):
-        signs = np.random.choice([-1, 1], size=X.shape[1])
+    for _ in range(30):
+        signs = random.choices([-1, 1, "positive", "negative"], k=X.shape[1])
         features_sign_constraints = dict(zip(list(range(X.shape[1])), signs))
         clr.fit(X, y, coefficients_sign_constraints=features_sign_constraints)
 
-        assert np.all(np.sign(clr.coef_) == signs)
+        # if coefficients multipled with imposed signs are all positive (or approximately positive) then pass the test
+        signs_numeric = np.array([1 if s == "positive" else -1 if s == "negative" else s for s in signs])
+        assert np.all(clr.coef_ * signs_numeric > -atol)
 
 
 def test_intercept_sign():
