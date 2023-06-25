@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import LinearRegression, Ridge
-
+import pytest
 from constrainedlr.model import ConstrainedLinearRegression
 
 atol = 1e-5
@@ -72,6 +72,25 @@ def test_intercept_sign():
 
     clr.fit(X, y, intercept_sign_constraint=-1)
     assert clr.intercept_ < 0
+
+    clr.fit(X, y, intercept_sign_constraint="positive")
+    assert clr.intercept_ > 0
+
+    clr.fit(X, y, intercept_sign_constraint="negative")
+    assert clr.intercept_ < 0
+
+    # Check the below runs without raising any exceptions
+    try:
+        clr.fit(X, y, intercept_sign_constraint=0)
+        clr.fit(X, y)
+    except Exception as exception:
+        assert False
+
+    # Check if exception is raised when an invalid value is given
+    with pytest.raises(ValueError):
+        clr.fit(X, y, intercept_sign_constraint="invalid value")
+    with pytest.raises(ValueError):
+        clr.fit(X, y, intercept_sign_constraint=2)
 
 
 def test_features_sum():

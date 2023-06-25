@@ -29,6 +29,22 @@ def validate_coefficients_sign_constraints(coefficients_sign_constraints: dict, 
     return coefficients_sign_constraints
 
 
+def validate_intercept_sign_constraint(intercept_sign_constraint: Union[int, str]) -> int:
+    if intercept_sign_constraint not in [-1, 0, 1, "positive", "negative"]:
+        raise ValueError(
+            "intercept_sign_constraint must be 0 (no sign constraint), 'positive' or 1 (positive sign constraint), "
+            "'negative' or -1 (negative sign constraint)"
+        )
+    intercept_sign_constraint = (
+        1
+        if intercept_sign_constraint == "positive"
+        else -1
+        if intercept_sign_constraint == "negative"
+        else intercept_sign_constraint
+    )
+    return intercept_sign_constraint
+
+
 def validate_coefficients_range_constraints(coefficients_range_constraints: dict, X) -> None:
     if type(coefficients_range_constraints) != dict:
         raise ValueError("coefficients_range_constraints must be of type dict")
