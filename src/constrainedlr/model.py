@@ -6,7 +6,11 @@ from cvxopt import matrix, solvers
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
-from .validation import validate_coefficients_sign_constraints, validate_coefficients_range_constraints
+from .validation import (
+    validate_coefficients_sign_constraints,
+    validate_coefficients_range_constraints,
+    validate_intercept_sign_constraint,
+)
 
 
 class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
@@ -45,7 +49,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         sample_weight: np.ndarray = None,
         coefficients_sign_constraints: dict = {},
         coefficients_range_constraints: dict = {},
-        intercept_sign_constraint: int = 0,
+        intercept_sign_constraint: Union[int, str] = 0,
         coefficients_sum_constraint: float = None,
     ) -> "ConstrainedLinearRegression":
         """
@@ -83,7 +87,8 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
             Fitted Estimator.
         """
         X, y = check_X_y(X, y)
-        validate_coefficients_sign_constraints(coefficients_sign_constraints, X)
+        coefficients_sign_constraints = validate_coefficients_sign_constraints(coefficients_sign_constraints, X)
+        intercept_sign_constraint = validate_intercept_sign_constraint(intercept_sign_constraint)
         validate_coefficients_range_constraints(coefficients_range_constraints, X)
 
         if len(coefficients_sign_constraints) > 0 and len(coefficients_range_constraints) > 0:

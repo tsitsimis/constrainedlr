@@ -1,10 +1,10 @@
-import sys
+import random
 
 import numpy as np
 import pandas as pd
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import LinearRegression, Ridge
-
+import pytest
 from constrainedlr.model import ConstrainedLinearRegression
 
 atol = 1e-5
@@ -55,12 +55,14 @@ def test_feature_signs():
 
     # Perform multiple tests since signs are produced randomly
     np.random.seed(0)
-    for _ in range(10):
-        signs = np.random.choice([-1, 1], size=X.shape[1])
+    for _ in range(30):
+        signs = random.choices([-1, 1, "positive", "negative"], k=X.shape[1])
         features_sign_constraints = dict(zip(list(range(X.shape[1])), signs))
         clr.fit(X, y, coefficients_sign_constraints=features_sign_constraints)
 
-        assert np.all(np.sign(clr.coef_) == signs)
+        # if coefficients multipled with imposed signs are all positive (or approximately positive) then pass the test
+        signs_numeric = np.array([1 if s == "positive" else -1 if s == "negative" else s for s in signs])
+        assert np.all(clr.coef_ * signs_numeric > -atol)
 
 
 def test_intercept_sign():
@@ -70,6 +72,25 @@ def test_intercept_sign():
 
     clr.fit(X, y, intercept_sign_constraint=-1)
     assert clr.intercept_ < 0
+
+    clr.fit(X, y, intercept_sign_constraint="positive")
+    assert clr.intercept_ > 0
+
+    clr.fit(X, y, intercept_sign_constraint="negative")
+    assert clr.intercept_ < 0
+
+    # Check the below runs without raising any exceptions
+    try:
+        clr.fit(X, y, intercept_sign_constraint=0)
+        clr.fit(X, y)
+    except Exception as exception:
+        assert False
+
+    # Check if exception is raised when an invalid value is given
+    with pytest.raises(ValueError):
+        clr.fit(X, y, intercept_sign_constraint="invalid value")
+    with pytest.raises(ValueError):
+        clr.fit(X, y, intercept_sign_constraint=2)
 
 
 def test_features_sum():
