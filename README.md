@@ -42,7 +42,7 @@ model = ConstrainedLinearRegression()
 model.fit(
     X_train,
     y_train,
-    coefficients_sign_constraints={
+    coefficients_range_constraints={
         0: {"lower": 2},  # 1st coefficient must be 2 or higher
         2: {"upper": 10},  # 3rd coefficient must be smaller than 10
         3: {"lower": 0.1, "upper": 0.5},  # 4th coefficient must be between 0.1 and 0.5
