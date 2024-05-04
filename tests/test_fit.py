@@ -17,26 +17,33 @@ y = dataset["target"]
 def test_no_intercept() -> None:
     clr = ConstrainedLinearRegression(fit_intercept=False)
     clr.fit(X, y)
+    y_pred = clr.predict(X)
     assert clr.intercept_ is None
     assert clr.coef_.shape[0] == X.shape[1]
+    assert y_pred.shape[0] == X.shape[0]
 
 
 def test_intercept() -> None:
     clr = ConstrainedLinearRegression(fit_intercept=True)
     clr.fit(X, y)
+    y_pred = clr.predict(X)
     assert clr.intercept_ is not None
     assert clr.coef_.shape[0] == X.shape[1]
+    assert y_pred.shape[0] == X.shape[0]
 
 
 def test_unconstrained() -> None:
     clr = ConstrainedLinearRegression(fit_intercept=True)
     clr.fit(X, y)
+    y_crl_pred = clr.predict(X)
 
     lr = LinearRegression(fit_intercept=True)
     lr.fit(X, y)
+    y_lr_pred = clr.predict(X)
 
     assert np.allclose(lr.intercept_, clr.intercept_, atol=atol)
     assert np.allclose(lr.coef_, clr.coef_, atol=atol)
+    assert np.allclose(y_lr_pred, y_crl_pred, atol=atol)
 
 
 def test_all_positive() -> None:
@@ -162,3 +169,86 @@ def test_coefficients_range_constraints() -> None:
                 assert clr.coef_[feature] <= contraints["upper"] + atol
             if "lower" in contraints:
                 assert clr.coef_[feature] >= contraints["lower"] - atol
+
+
+def test_mixed_constraints() -> None:
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(
+            X,
+            y,
+            coefficients_sign_constraints={0: "positive"},
+            coefficients_range_constraints={0: {"lower": 0, "upper": 1}},
+        )
+
+
+def test_non_dict_constraints_sign_constraints() -> None:
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_sign_constraints=100)
+
+
+def test_non_int_indices_sign_constraints() -> None:
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_sign_constraints={"de": 1})
+
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_sign_constraints={1.2: 1})
+
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_sign_constraints={-1: 1})
+
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_sign_constraints={X.shape[0]: 1})
+
+
+def test_invalid_sign_sign_constraints() -> None:
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_sign_constraints={0: 3})
+
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_sign_constraints={0: "very positive"})
+
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_sign_constraints={0: -2})
+
+
+def test_non_dict_constraints_range_constraints() -> None:
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_range_constraints=100)
+
+
+def test_non_int_indices_range_constraints() -> None:
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_range_constraints={"de": 1})
+
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_range_constraints={1.2: 1})
+
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_range_constraints={-1: 1})
+
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_range_constraints={X.shape[0]: 1})
+
+
+def test_invalid_range_constraints() -> None:
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_range_constraints={0: {"bottom": 0}})
+
+    with pytest.raises(ValueError):
+        clr = ConstrainedLinearRegression()
+        clr.fit(X, y, coefficients_range_constraints={0: {"lower": 1, "upper": 0}})

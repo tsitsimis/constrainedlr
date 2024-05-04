@@ -104,11 +104,8 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
 
         if len(coefficients_sign_constraints) > 0 and len(coefficients_range_constraints) > 0:
             raise ValueError(
-                "Only one of `features_sign_constraints` or `coefficients_range_constraints` can be provided."
+                "Only one of `coefficients_sign_constraints` or `coefficients_range_constraints` can be provided."
             )
-
-        if np.ndim(y) == 1:
-            y = y.reshape(-1, 1)
 
         n_samples, n_features = X.shape
 
