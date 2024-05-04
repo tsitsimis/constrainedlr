@@ -5,7 +5,7 @@ theme:
   palette:
     scheme: slate
 
-  
+
 plugins:
   - mkdocstrings
   - search

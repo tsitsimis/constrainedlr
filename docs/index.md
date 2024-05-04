@@ -25,7 +25,7 @@ dataset = load_diabetes()
 X = dataset["data"]
 y = dataset["target"]
 
-# Instantiate Constrained Linear Regression model 
+# Instantiate Constrained Linear Regression model
 model = ConstrainedLinearRegression(fit_intercept=True)
 
 # Fit model and constraint the sign of the 1st and 3rd coefficient
@@ -33,7 +33,7 @@ model = ConstrainedLinearRegression(fit_intercept=True)
 sign_constraints = {
     0: "positive",  # Coefficient of 1st feature must be positive
     2: "negative":,  # Coefficient of 3rd feature must be negative
-    # The remaining coefficients are not specified and by default have no sign constraints 
+    # The remaining coefficients are not specified and by default have no sign constraints
 }
 model.fit(X, y, coefficients_sign_constraints=sign_constraints)
 print(model.coef_)
@@ -57,7 +57,7 @@ range_constraints = {
     0: {"lower": 2},  # Coefficient of 1st feature must be 2 or higher
     2: {"upper": 10},  # Coefficient of 3rd feature can not be larger than 10
     3: {"lower": 3, "upper": 4},  # Coefficient of 4th feature must have a value between 3 and 4
-    # The remaining coefficients are not specified and by default have no range constraints 
+    # The remaining coefficients are not specified and by default have no range constraints
 }
 model.fit(X, y, coefficients_range_constraints=range_constraints)
 print(model.coef_)

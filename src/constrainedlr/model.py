@@ -1,4 +1,11 @@
-from typing import Union
+"""
+Constrained Linear Model
+"""
+
+# ruff: noqa: N806 (non-lower-case-variable-in-function)
+# ruff: noqa: N803 (invalid-argument-name)
+
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -6,21 +13,25 @@ from cvxopt import matrix, solvers
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
-from .validation import (
-    validate_coefficients_sign_constraints,
+from src.constrainedlr.validation import (
     validate_coefficients_range_constraints,
+    validate_coefficients_sign_constraints,
     validate_intercept_sign_constraint,
 )
 
 
 class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
+    """
+    Least squares Linear Regression with optional constraints on its coefficients/weights.
+
+    ConstrainedLinearRegression fits a linear model with coefficients w = (w1, …, wp) to minimize the residual
+    sum of squares between the observed targets in the dataset, and the targets predicted by the linear approximation,
+    while at the same time imposing constraints on the signs and values of the coefficients.
+    """
+
     def __init__(self, fit_intercept: bool = True, alpha: float = 0.0):
         """
-        Least squares Linear Regression with optional constraints on its coefficients/weights.
-
-        ConstrainedLinearRegression fits a linear model with coefficients w = (w1, …, wp) to minimize the residual
-        sum of squares between the observed targets in the dataset, and the targets predicted by the linear approximation,
-        while at the same time imposing constraints on the signs and values of the coefficients.
+        ConstrainedLinearRegression constructor
 
         Args:
             fit_intercept:
@@ -44,13 +55,13 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
 
     def fit(
         self,
-        X: Union[np.ndarray, pd.DataFrame],
+        X: Union[np.ndarray, pd.DataFrame],  # noqa: N803
         y: np.ndarray,
-        sample_weight: np.ndarray = None,
-        coefficients_sign_constraints: dict = {},
-        coefficients_range_constraints: dict = {},
+        sample_weight: Optional[np.ndarray] = None,
+        coefficients_sign_constraints: Optional[dict] = None,
+        coefficients_range_constraints: Optional[dict] = None,
         intercept_sign_constraint: Union[int, str] = 0,
-        coefficients_sum_constraint: float = None,
+        coefficients_sum_constraint: Optional[float] = None,
     ) -> "ConstrainedLinearRegression":
         """
         Fit linear model with constraints.
@@ -66,16 +77,16 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
                 Individual weights of shape (n_samples,) for each sample.
 
             coefficients_sign_constraints:
-                Dictionary with sign constraints. Keys must be integers specifying the location of the corresponding feature
-                in the columns in the dataset. Values must take the values: -1, 0, 1 indicating negative,
+                Dictionary with sign constraints. Keys must be integers specifying the location of the corresponding
+                feature in the columns in the dataset. Values must take the values: -1, 0, 1 indicating negative,
                 unconstrained and positive sign respectively. Any column that is not present in the
                 dictionary will default to 0.
 
             coefficients_range_constraints:
                 Dictionary of the form: `{column_index: {"lower": <float>, "upper": <float>}}`.
                 Eiter both or one of lower or upper bounds can be specified. If a column index is not specified,
-                the coefficient remains unconstrained. Only one of `features_sign_constraints` or `coefficients_range_constraints`
-                can be provided.
+                the coefficient remains unconstrained. Only one of `features_sign_constraints`
+                or `coefficients_range_constraints` can be provided.
 
             intercept_sign_constraint:
                 Indicates the sign of intercept, if present, and must take the values: -1, 0, 1.
@@ -89,7 +100,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         X, y = check_X_y(X, y)
         coefficients_sign_constraints = validate_coefficients_sign_constraints(coefficients_sign_constraints, X)
         intercept_sign_constraint = validate_intercept_sign_constraint(intercept_sign_constraint)
-        validate_coefficients_range_constraints(coefficients_range_constraints, X)
+        coefficients_range_constraints = validate_coefficients_range_constraints(coefficients_range_constraints, X)
 
         if len(coefficients_sign_constraints) > 0 and len(coefficients_range_constraints) > 0:
             raise ValueError(
@@ -108,10 +119,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         dim = X.shape[1]
 
         # Weight matrix
-        if sample_weight is None:
-            W = np.eye(n_samples)
-        else:
-            W = np.diag(sample_weight)
+        W = np.eye(n_samples) if sample_weight is None else np.diag(sample_weight)
 
         # Quadratic program
         P = X.T.dot(W).dot(X) + self.alpha * np.eye(dim)
