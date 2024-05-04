@@ -5,7 +5,7 @@ import pytest
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import LinearRegression, Ridge
 
-from src.constrainedlr.model import ConstrainedLinearRegression
+from constrainedlr.model import ConstrainedLinearRegression
 
 atol = 1e-5
 

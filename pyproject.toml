@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = 'constrainedlr'
-version = '0.1.4'
+version = '0.1.5'
 description = 'Constrained Linear Regression with sklearn-compatible API'
 readme = 'README.md'
 authors = [
@@ -44,11 +44,14 @@ dev = [
   "pytest-cov",
   "diff_cover",
   "ruff",
+  "build"
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/tsitsimis/constrainedlr"
 
+[tool.setuptools]
+packages = ["constrainedlr"]
 
 [tool.ruff]
 # Allow lines to be as long as 120.
