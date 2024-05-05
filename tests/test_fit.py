@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import LinearRegression, Ridge
@@ -27,6 +28,18 @@ def test_intercept() -> None:
     clr = ConstrainedLinearRegression(fit_intercept=True)
     clr.fit(X, y)
     y_pred = clr.predict(X)
+    assert clr.intercept_ is not None
+    assert clr.coef_.shape[0] == X.shape[1]
+    assert y_pred.shape[0] == X.shape[0]
+
+
+def test_pandas_input() -> None:
+    clr = ConstrainedLinearRegression(fit_intercept=True)
+
+    df = pd.DataFrame(X, columns=[f"col{i}" for i in range(X.shape[1])])
+    clr.fit(df, y)
+    y_pred = clr.predict(df)
+
     assert clr.intercept_ is not None
     assert clr.coef_.shape[0] == X.shape[1]
     assert y_pred.shape[0] == X.shape[0]
