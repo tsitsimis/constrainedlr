@@ -49,8 +49,8 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
                 Independent/constant term in regression model. Set to None if fit_intercept = False.
         """
         self.fit_intercept = fit_intercept
-        self.coef_ = None
-        self.intercept_ = None
+        self.coef_: Optional[np.ndarray] = None
+        self.intercept_: Optional[float] = None
         self.alpha = alpha
 
     def fit(
@@ -198,7 +198,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
             X = np.hstack([X, np.ones(n_samples).reshape(-1, 1)])
             weights = np.concatenate([self.coef_, [self.intercept_]])
         else:
-            weights = self.coef_
+            weights = self.coef_  # type: ignore
 
         y_pred = X.dot(weights)
-        return y_pred
+        return y_pred  # type: ignore
