@@ -52,6 +52,7 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         self.coef_: Optional[np.ndarray] = None
         self.intercept_: Optional[float] = None
         self.alpha = alpha
+        self.feature_names_in_: Optional[np.ndarray[str]] = None
 
     def fit(
         self,
@@ -97,10 +98,19 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
         Returns:
             Fitted Estimator.
         """
-        X, y = check_X_y(X, y)
-        coefficients_sign_constraints = validate_coefficients_sign_constraints(coefficients_sign_constraints, X)
+        if isinstance(X, pd.DataFrame):
+            self.feature_names_in_ = np.array(X.columns.to_list())
+            print(self.feature_names_in_)
+
+        coefficients_sign_constraints = validate_coefficients_sign_constraints(
+            coefficients_sign_constraints, X, self.feature_names_in_
+        )
         intercept_sign_constraint = validate_intercept_sign_constraint(intercept_sign_constraint)
-        coefficients_range_constraints = validate_coefficients_range_constraints(coefficients_range_constraints, X)
+        coefficients_range_constraints = validate_coefficients_range_constraints(
+            coefficients_range_constraints, X, self.feature_names_in_
+        )
+
+        X, y = check_X_y(X, y)
 
         if len(coefficients_sign_constraints) > 0 and len(coefficients_range_constraints) > 0:
             raise ValueError(
@@ -202,3 +212,11 @@ class ConstrainedLinearRegression(BaseEstimator, RegressorMixin):
 
         y_pred = X.dot(weights)
         return y_pred  # type: ignore
+
+    def get_feature_names_out(self) -> np.ndarray[str]:
+        """Get output feature names
+
+        Returns:
+            List of feature names
+        """
+        return self.feature_names_in_
