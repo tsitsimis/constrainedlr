@@ -3,16 +3,22 @@ import random
 import numpy as np
 import pandas as pd
 import pytest
+import sklearn
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from constrainedlr.model import ConstrainedLinearRegression
+from constrainedlr.validation import convert_feature_names_to_indices
 
 atol = 1e-5
 
 dataset = load_diabetes()
 X = dataset["data"]
 y = dataset["target"]
+
+X_df = pd.DataFrame(X, columns=dataset["feature_names"])
 
 
 def test_no_intercept() -> None:
@@ -45,6 +51,64 @@ def test_pandas_input() -> None:
     assert y_pred.shape[0] == X.shape[0]
 
 
+def test_pipeline() -> None:
+    pipeline = Pipeline(
+        [("scaler", StandardScaler()), ("reg", ConstrainedLinearRegression(fit_intercept=True, alpha=1.0))]
+    )
+    pipeline.fit(
+        X,
+        y,
+        reg__coefficients_range_constraints={6: {"lower": 1}, 7: {"lower": 0, "upper": 1}},
+        reg__coefficients_sum_constraint=10,
+        reg__intercept_sign_constraint="negative",
+    )
+    y_pred = pipeline.predict(X)
+
+    assert pipeline.named_steps["reg"].intercept_ is not None
+    assert pipeline.named_steps["reg"].coef_.shape[0] == X.shape[1]
+    assert y_pred.shape[0] == X.shape[0]
+
+
+def test_pipeline_named_features_sign() -> None:
+    sklearn.set_config(transform_output="pandas")
+
+    pipeline = Pipeline(
+        [("scaler", StandardScaler()), ("reg", ConstrainedLinearRegression(fit_intercept=True, alpha=1.0))]
+    )
+    pipeline.fit(
+        X_df,
+        y,
+        reg__coefficients_sign_constraints={"s1": "positive", "s3": "negative"},
+        reg__coefficients_sum_constraint=10,
+        reg__intercept_sign_constraint="negative",
+    )
+    y_pred = pipeline.predict(X_df)
+
+    assert pipeline.named_steps["reg"].intercept_ is not None
+    assert pipeline.named_steps["reg"].coef_.shape[0] == X.shape[1]
+    assert y_pred.shape[0] == X.shape[0]
+
+
+def test_pipeline_named_features_range() -> None:
+    sklearn.set_config(transform_output="pandas")
+
+    pipeline = Pipeline(
+        [("scaler", StandardScaler()), ("reg", ConstrainedLinearRegression(fit_intercept=True, alpha=1.0))]
+    )
+    pipeline.fit(
+        X_df,
+        y,
+        reg__coefficients_range_constraints={"s1": {"lower": 1}, "s3": {"lower": 0, "upper": 1}},
+        reg__coefficients_sum_constraint=10,
+        reg__intercept_sign_constraint="negative",
+    )
+    y_pred = pipeline.predict(X_df)
+
+    assert pipeline.named_steps["reg"].intercept_ is not None
+    assert pipeline.named_steps["reg"].coef_.shape[0] == X.shape[1]
+    assert y_pred.shape[0] == X.shape[0]
+
+
 def test_unconstrained() -> None:
     clr = ConstrainedLinearRegression(fit_intercept=True)
     clr.fit(X, y)
@@ -65,6 +129,17 @@ def test_all_positive() -> None:
 
     lr = LinearRegression(fit_intercept=True, positive=True)
     lr.fit(X, y)
+
+    assert np.allclose(lr.intercept_, clr.intercept_, atol=atol)
+    assert np.allclose(lr.coef_, clr.coef_, atol=atol)
+
+
+def test_all_positive_named_features() -> None:
+    clr = ConstrainedLinearRegression(fit_intercept=True)
+    clr.fit(X_df, y, coefficients_sign_constraints={col: 1 for col in X_df.columns})
+
+    lr = LinearRegression(fit_intercept=True, positive=True)
+    lr.fit(X_df, y)
 
     assert np.allclose(lr.intercept_, clr.intercept_, atol=atol)
     assert np.allclose(lr.coef_, clr.coef_, atol=atol)
@@ -265,3 +340,53 @@ def test_invalid_range_constraints() -> None:
     with pytest.raises(ValueError):
         clr = ConstrainedLinearRegression()
         clr.fit(X, y, coefficients_range_constraints={0: {"lower": 1, "upper": 0}})
+
+
+def test_convert_feature_names_in_sign_constraints_to_indices():
+    constraints = {"age": 0, "bmi": "negative"}
+    feature_names_in_ = ["age", "sex", "bmi", "bp", "s1", "s2", "s3", "s4", "s5", "s6"]
+    formatted_constraints = convert_feature_names_to_indices(constraints, feature_names_in_)
+    assert formatted_constraints == {0: 0, 2: "negative"}
+
+
+def test_convert_feature_names_in_sign_constraints_to_indices_pipeline():
+    constraints = {"age": 0, "bmi": "negative"}
+    feature_names_in_ = [
+        "standardscaler-1__age",
+        "standardscaler-1__sex",
+        "standardscaler-1__bmi",
+        "standardscaler-1__bp",
+        "standardscaler-1__s1",
+        "standardscaler-1__s2",
+        "standardscaler-1__s3",
+        "standardscaler-1__s4",
+        "standardscaler-1__s5",
+        "standardscaler-1__s6",
+    ]
+    formatted_constraints = convert_feature_names_to_indices(constraints, feature_names_in_)
+    assert formatted_constraints == {0: 0, 2: "negative"}
+
+
+def test_convert_feature_names_in_range_constraints_to_indices():
+    constraints = {"age": {"lower": 0, "upper": 3}, "bmi": {"upper": -1}}
+    feature_names_in_ = ["age", "sex", "bmi", "bp", "s1", "s2", "s3", "s4", "s5", "s6"]
+    formatted_constraints = convert_feature_names_to_indices(constraints, feature_names_in_)
+    assert formatted_constraints == {0: {"lower": 0, "upper": 3}, 2: {"upper": -1}}
+
+
+def test_convert_feature_names_in_range_constraints_to_indices_pipeline():
+    constraints = {"age": {"lower": 0, "upper": 3}, "bmi": {"upper": -1}}
+    feature_names_in_ = [
+        "standardscaler-1__age",
+        "standardscaler-1__sex",
+        "standardscaler-1__bmi",
+        "standardscaler-1__bp",
+        "standardscaler-1__s1",
+        "standardscaler-1__s2",
+        "standardscaler-1__s3",
+        "standardscaler-1__s4",
+        "standardscaler-1__s5",
+        "standardscaler-1__s6",
+    ]
+    formatted_constraints = convert_feature_names_to_indices(constraints, feature_names_in_)
+    assert formatted_constraints == {0: {"lower": 0, "upper": 3}, 2: {"upper": -1}}
